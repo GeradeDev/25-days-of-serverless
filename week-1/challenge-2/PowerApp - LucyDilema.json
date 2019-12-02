@@ -1,0 +1,390 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"logicAppName": {
+			"type": "String",
+			"metadata": {
+				"description": "Name of the logic app."
+			}
+		},
+		"logicAppLocation": {
+			"defaultValue": "[resourceGroup().location]",
+			"allowedValues": ["eastasia", "southeastasia", "centralus", "eastus", "eastus2", "westus", "northcentralus", "southcentralus", "northeurope", "westeurope", "japanwest", "japaneast", "brazilsouth", "australiaeast", "australiasoutheast", "southindia", "centralindia", "westindia", "canadacentral", "canadaeast", "westcentralus", "westus2", "[resourceGroup().location]"],
+			"type": "String",
+			"metadata": {
+				"description": "Location of the logic app."
+			}
+		},
+		"slack_Connection_Name": {
+			"defaultValue": "slack",
+			"type": "String",
+			"metadata": {
+				"description": "Name of the connection."
+			}
+		}
+	},
+	"resources": [{
+			"type": "Microsoft.Logic/workflows",
+			"name": "[parameters('logicAppName')]",
+			"apiVersion": "2016-06-01",
+			"location": "[parameters('logicAppLocation')]",
+			"properties": {
+				"state": "Disabled",
+				"definition": {
+					"$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+					"contentVersion": "1.0.0.0",
+					"parameters": {
+						"$connections": {
+							"defaultValue": {},
+							"type": "Object"
+						},
+						"$authentication": {
+							"defaultValue": {},
+							"type": "SecureObject"
+						}
+					},
+					"triggers": {
+						"Recurrence": {
+							"recurrence": {
+								"frequency": "Day",
+								"interval": 1,
+								"timeZone": "W. Europe Standard Time",
+								"startTime": "2019-12-13T07:00:00.000Z"
+							},
+							"type": "Recurrence"
+						}
+					},
+					"actions": {
+						"Notify_-_Start_the_coffee": {
+							"runAfter": {},
+							"metadata": {
+								"flowSystemMetadata": {
+									"swaggerOperationId": "PostMessage"
+								}
+							},
+							"type": "ApiConnection",
+							"inputs": {
+								"host": {
+									"connection": {
+										"name": "@parameters('$connections')['slack']['connectionId']"
+									}
+								},
+								"method": "post",
+								"path": "/chat.postMessage",
+								"queries": {
+									"channel": "C21G4UCR1",
+									"text": "Start the coffee, set out 4 cups"
+								},
+								"authentication": "@parameters('$authentication')"
+							}
+						},
+						"Notify_-_Pour_2_cups_of_coffee": {
+							"runAfter": {
+								"Delay_-_25_minutes": ["Succeeded"]
+							},
+							"metadata": {
+								"flowSystemMetadata": {
+									"swaggerOperationId": "PostMessage"
+								}
+							},
+							"type": "ApiConnection",
+							"inputs": {
+								"host": {
+									"connection": {
+										"name": "@parameters('$connections')['slack']['connectionId']"
+									}
+								},
+								"method": "post",
+								"path": "/chat.postMessage",
+								"queries": {
+									"channel": "C21G4UCR1",
+									"text": "Pour 2 cups of coffee"
+								},
+								"authentication": "@parameters('$authentication')"
+							}
+						},
+						"Delay_-_5_minutes": {
+							"runAfter": {
+								"Notify_-_Pour_2_cups_of_coffee": ["Succeeded"]
+							},
+							"type": "Wait",
+							"inputs": {
+								"interval": {
+									"count": 5,
+									"unit": "Minute"
+								}
+							}
+						},
+						"Notify_-_Deliver_Coffee_to_Mom_and_Dad": {
+							"runAfter": {
+								"Delay_(5_minutes)_-_Wait_for_candles_to_be_lit": ["Succeeded"]
+							},
+							"metadata": {
+								"flowSystemMetadata": {
+									"swaggerOperationId": "PostMessage"
+								}
+							},
+							"type": "ApiConnection",
+							"inputs": {
+								"host": {
+									"connection": {
+										"name": "@parameters('$connections')['slack']['connectionId']"
+									}
+								},
+								"method": "post",
+								"path": "/chat.postMessage",
+								"queries": {
+									"channel": "C21G4UCR1",
+									"text": "Deliver Coffee to Mom and Dad"
+								},
+								"authentication": "@parameters('$authentication')"
+							}
+						},
+						"Delay_(4_Minutes)_-_Deliver_to_Mom_and_Dad": {
+							"runAfter": {
+								"Notify_-_Deliver_Coffee_to_Mom_and_Dad": ["Succeeded"]
+							},
+							"type": "Wait",
+							"inputs": {
+								"interval": {
+									"count": 4,
+									"unit": "Minute"
+								}
+							}
+						},
+						"Delay_-_25_minutes": {
+							"runAfter": {
+								"Notify_-_Start_the_coffee": ["Succeeded"]
+							},
+							"type": "Wait",
+							"inputs": {
+								"interval": {
+									"count": 25,
+									"unit": "Minute"
+								}
+							}
+						},
+						"Notify_-_Light_Candles": {
+							"runAfter": {
+								"Delay_-_5_minutes": ["Succeeded"]
+							},
+							"metadata": {
+								"flowSystemMetadata": {
+									"swaggerOperationId": "PostMessage"
+								}
+							},
+							"type": "ApiConnection",
+							"inputs": {
+								"host": {
+									"connection": {
+										"name": "@parameters('$connections')['slack']['connectionId']"
+									}
+								},
+								"method": "post",
+								"path": "/chat.postMessage",
+								"queries": {
+									"channel": "C21G4UCR1",
+									"text": "Light candles."
+								},
+								"authentication": "@parameters('$authentication')"
+							}
+						},
+						"Delay_(5_minutes)_-_Wait_for_candles_to_be_lit": {
+							"runAfter": {
+								"Notify_-_Light_Candles": ["Succeeded"]
+							},
+							"type": "Wait",
+							"inputs": {
+								"interval": {
+									"count": 5,
+									"unit": "Minute"
+								}
+							}
+						},
+						"Notify_-_Return_to_the_kitchen_to_setup_cups_for_siblings": {
+							"runAfter": {
+								"Delay_(4_Minutes)_-_Deliver_to_Mom_and_Dad": ["Succeeded"]
+							},
+							"metadata": {
+								"flowSystemMetadata": {
+									"swaggerOperationId": "PostMessage"
+								}
+							},
+							"type": "ApiConnection",
+							"inputs": {
+								"host": {
+									"connection": {
+										"name": "@parameters('$connections')['slack']['connectionId']"
+									}
+								},
+								"method": "post",
+								"path": "/chat.postMessage",
+								"queries": {
+									"channel": "C21G4UCR1",
+									"text": "Return to the kitchen to setup cups for siblings"
+								},
+								"authentication": "@parameters('$authentication')"
+							}
+						},
+						"Delay_(1_Minute)_-_Return_to_kitchen": {
+							"runAfter": {
+								"Notify_-_Return_to_the_kitchen_to_setup_cups_for_siblings": ["Succeeded"]
+							},
+							"type": "Wait",
+							"inputs": {
+								"interval": {
+									"count": 1,
+									"unit": "Minute"
+								}
+							}
+						},
+						"Notify_-_Relight_candles": {
+							"runAfter": {
+								"Delay_(1_Minute)_-_Return_to_kitchen": ["Succeeded"]
+							},
+							"metadata": {
+								"flowSystemMetadata": {
+									"swaggerOperationId": "PostMessage"
+								}
+							},
+							"type": "ApiConnection",
+							"inputs": {
+								"host": {
+									"connection": {
+										"name": "@parameters('$connections')['slack']['connectionId']"
+									}
+								},
+								"method": "post",
+								"path": "/chat.postMessage",
+								"queries": {
+									"channel": "C21G4UCR1",
+									"text": "Relight candles"
+								},
+								"authentication": "@parameters('$authentication')"
+							}
+						},
+						"Delay_(5_Minutes)_-_Relight_Candles_": {
+							"runAfter": {
+								"Notify_-_Relight_candles": ["Succeeded"]
+							},
+							"type": "Wait",
+							"inputs": {
+								"interval": {
+									"count": 5,
+									"unit": "Minute"
+								}
+							}
+						},
+						"Notify_-_Deliver_coffee_to_brother_and_sister": {
+							"runAfter": {
+								"Delay_(5_Minutes)_-_Relight_Candles_": ["Succeeded"]
+							},
+							"metadata": {
+								"flowSystemMetadata": {
+									"swaggerOperationId": "PostMessage"
+								}
+							},
+							"type": "ApiConnection",
+							"inputs": {
+								"host": {
+									"connection": {
+										"name": "@parameters('$connections')['slack']['connectionId']"
+									}
+								},
+								"method": "post",
+								"path": "/chat.postMessage",
+								"queries": {
+									"channel": "C21G4UCR1",
+									"text": "Deliver coffee to brother and sister."
+								},
+								"authentication": "@parameters('$authentication')"
+							}
+						},
+						"Delay_(4_minutes)_-_Deliver_to_brother_and_sister": {
+							"runAfter": {
+								"Notify_-_Deliver_coffee_to_brother_and_sister": ["Succeeded"]
+							},
+							"type": "Wait",
+							"inputs": {
+								"interval": {
+									"count": 4,
+									"unit": "Minute"
+								}
+							}
+						},
+						"Notify_-_Return_to_kitchen_to_rest": {
+							"runAfter": {
+								"Delay_(4_minutes)_-_Deliver_to_brother_and_sister": ["Succeeded"]
+							},
+							"metadata": {
+								"flowSystemMetadata": {
+									"swaggerOperationId": "PostMessage"
+								}
+							},
+							"type": "ApiConnection",
+							"inputs": {
+								"host": {
+									"connection": {
+										"name": "@parameters('$connections')['slack']['connectionId']"
+									}
+								},
+								"method": "post",
+								"path": "/chat.postMessage",
+								"queries": {
+									"channel": "C21G4UCR1",
+									"text": "Return to kicthen to rest."
+								},
+								"authentication": "@parameters('$authentication')"
+							}
+						}
+					}
+				},
+				"parameters": {
+					"$connections": {
+						"value": {
+							"slack": {
+								"id": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', parameters('logicAppLocation'), '/managedApis/', 'slack')]",
+								"connectionId": "[resourceId('Microsoft.Web/connections', parameters('slack_Connection_Name'))]",
+								"connectionName": "[parameters('slack_Connection_Name')]"
+							}
+						}
+					}
+				},
+				"runtimeConfiguration": {
+					"lifetime": {
+						"unit": "Day",
+						"count": 30
+					},
+					"collections": {
+						"maximumItemCount": 5000
+					},
+					"performanceProfile": {
+						"throttles": {
+							"mode": "Low"
+						}
+					},
+					"retryPolicy": {
+						"type": "Exponential",
+						"interval": "PT7S",
+						"count": 2,
+						"minimumInterval": "PT5S",
+						"maximumInterval": "PT1H"
+					}
+				}
+			},
+			"dependsOn": ["[resourceId('Microsoft.Web/connections', parameters('slack_Connection_Name'))]"]
+		}, {
+			"type": "Microsoft.Web/connections",
+			"name": "[parameters('slack_Connection_Name')]",
+			"apiVersion": "2016-06-01",
+			"location": "[parameters('logicAppLocation')]",
+			"properties": {
+				"api": {
+					"id": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', parameters('logicAppLocation'), '/managedApis/', 'slack')]"
+				},
+				"displayName": "[parameters('slack_Connection_Name')]"
+			}
+		}
+	]
+}
